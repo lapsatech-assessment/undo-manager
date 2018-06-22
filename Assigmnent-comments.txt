@@ -1,0 +1,3 @@
+1. The implementation is not thread-safe because there is no requirements to ensuring thread-safety. But it could be supported completely.
+2. I know, that you asked to implement UndoManagerFactory and UndoManager ONLY, but I added UndoManagerFactory.getInstanceSPI() method for some usability and flexibility reasons.
+ 

@@ -19,4 +19,21 @@ public interface UndoManagerFactory {
      * @return The {@link UndoManager} created.
      */
     UndoManager createUndoManager(Document doc, int bufferSize);
+
+    /**
+     * Create and return an instance of default {@link UndoManagerFactory}
+     * implementation. An {@linkplain UndoManagerFactory} implementation providers should register themselves via
+     * SPI mechanism.
+     * 
+     * @throws IllegalStateException
+     *             If there is no any factory provider registered
+     * @return Default implementation of {@link UndoManagerFactory}
+     */
+    public static UndoManagerFactory getInstanceSPI() {
+	final Iterator<UndoManagerFactory> providersIterator = ServiceLoader.load(UndoManagerFactory.class).iterator();
+	if (providersIterator.hasNext())
+	    return providersIterator.next();
+	throw new IllegalStateException(
+		String.format("There is no any %1$s providers registered", UndoManagerFactory.class.getName()));
+    }
 }
