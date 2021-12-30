@@ -1,67 +1,68 @@
 package undo.impl.test;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OverallTest extends ABaseTest {
 
-    @Test
-    public void processTest() {
+  @Test
+  public void processTest() {
 
-	insertionChange(0, "A");
-	assertThat(doc.getRaw(), equalTo("A"));
+    insertionChange(0, "A");
 
-	assertTrue(manager.canUndo());
-	assertFalse(manager.canRedo());
+    assertThat(doc.getRaw()).isEqualTo("A");
 
-	insertionChange(0, "B");
-	assertThat(doc.getRaw(), equalTo("BA"));
+    assertThat(manager.canUndo()).isTrue();
+    assertThat(manager.canRedo()).isFalse();
 
-	assertTrue(manager.canUndo());
-	assertFalse(manager.canRedo());
+    insertionChange(0, "B");
+    assertThat(doc.getRaw()).isEqualTo("BA");
 
-	manager.undo();
-	assertThat(doc.getRaw(), equalTo("A"));
+    assertThat(manager.canUndo()).isTrue();
+    assertThat(manager.canRedo()).isFalse();
 
-	assertTrue(manager.canUndo());
-	assertTrue(manager.canRedo());
+    manager.undo();
+    assertThat(doc.getRaw()).isEqualTo("A");
 
-	insertionChange(1, "Another string");
-	assertThat(doc.getRaw(), equalTo("AAnother string"));
+    assertThat(manager.canUndo()).isTrue();
+    assertThat(manager.canRedo()).isTrue();
 
-	assertTrue(manager.canUndo());
-	assertFalse(manager.canRedo());
+    insertionChange(1, "Another string");
+    assertThat(doc.getRaw()).isEqualTo("AAnother string");
 
-	manager.undo();
-	assertThat(doc.getRaw(), equalTo("A"));
+    assertThat(manager.canUndo()).isTrue();
+    assertThat(manager.canRedo()).isFalse();
 
-	manager.redo();
-	assertThat(doc.getRaw(), equalTo("AAnother string"));
+    manager.undo();
+    assertThat(doc.getRaw()).isEqualTo("A");
 
-	insertionChange(0, "C");
-	assertThat(doc.getRaw(), equalTo("CAAnother string"));
+    manager.redo();
+    assertThat(doc.getRaw()).isEqualTo("AAnother string");
 
-	deletionChange(2, "Another string");
-	assertThat(doc.getRaw(), equalTo("CA"));
+    insertionChange(0, "C");
+    assertThat(doc.getRaw()).isEqualTo("CAAnother string");
 
-	manager.undo();
-	assertThat(doc.getRaw(), equalTo("CAAnother string"));
+    deletionChange(2, "Another string");
+    assertThat(doc.getRaw()).isEqualTo("CA");
 
-	manager.undo();
-	assertThat(doc.getRaw(), equalTo("AAnother string"));
+    manager.undo();
+    assertThat(doc.getRaw()).isEqualTo("CAAnother string");
 
-	manager.redo();
-	assertThat(doc.getRaw(), equalTo("CAAnother string"));
+    manager.undo();
+    assertThat(doc.getRaw()).isEqualTo("AAnother string");
 
-	manager.undo();
-	assertThat(doc.getRaw(), equalTo("AAnother string"));
+    manager.redo();
+    assertThat(doc.getRaw()).isEqualTo("CAAnother string");
 
-	manager.undo();
-	assertThat(doc.getRaw(), equalTo("A"));
+    manager.undo();
+    assertThat(doc.getRaw()).isEqualTo("AAnother string");
 
-	manager.undo();
-	assertThat(doc.getRaw(), is(""));
-    }
+    manager.undo();
+    assertThat(doc.getRaw()).isEqualTo("A");
+
+    manager.undo();
+    assertThat(doc.getRaw()).isEmpty();
+    ;
+  }
 }
