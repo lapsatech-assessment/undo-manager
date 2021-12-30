@@ -1,32 +1,40 @@
 package undo.impl;
 
 import java.util.Deque;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.locks.ReentrantLock;
 
 import undo.Change;
 import undo.Document;
 import undo.UndoManager;
 
-class UndoManagerImpl implements UndoManager {
+public class UndoManagerImpl implements UndoManager {
 
-  private final Document doc;
+  private final ReentrantLock lock = new ReentrantLock();
 
-  private final Deque<Change> undos;
-  private final Deque<Change> redos;
+  final Document doc;
+  final int bufferSize;
 
-  UndoManagerImpl(final Document doc, final int bufferSize) {
+  private final Deque<Change> undos = new ConcurrentLinkedDeque<>();
+  private final Deque<Change> redos = new ConcurrentLinkedDeque<>();
+
+  public UndoManagerImpl(final Document doc, final int bufferSize) {
     this.doc = doc;
-    this.undos = new EvictingLinkedList<>(bufferSize);
-    this.redos = new LinkedList<>();
+    this.bufferSize = bufferSize;
   }
 
   @Override
   public void registerChange(final Change change) {
-    undos.push(change);
-    if (!redos.isEmpty())
-      redos.clear(); // REDOs stack should be cleared after new change has
-    // committed
-
+    lock.lock();
+    try {
+      undos.addFirst(change);
+      while (undos.size() > bufferSize) {
+        undos.removeLast();
+      }
+      redos.clear(); // REDOs stack should be cleared after new change has committed
+    } finally {
+      lock.unlock();
+    }
   }
 
   @Override
@@ -36,16 +44,17 @@ class UndoManagerImpl implements UndoManager {
 
   @Override
   public void undo() {
-    if (!canUndo())
-      throw new IllegalStateException("Undo can't be done at the moment");
-    final Change c = undos.pop();
+    lock.lock();
     try {
+      if (!canUndo()) {
+        throw new IllegalStateException("Undo can't be done at the moment");
+      }
+      final Change c = undos.getFirst();
       c.revert(doc);
-      redos.push(c);
-    } catch (final IllegalStateException e) {
-      undos.push(c); // put the change back to the UNDOs stack if applying
-      // have failed
-      throw e;
+      redos.addFirst(c);
+      undos.removeFirst();
+    } finally {
+      lock.unlock();
     }
   }
 
@@ -56,16 +65,17 @@ class UndoManagerImpl implements UndoManager {
 
   @Override
   public void redo() {
-    if (!canRedo())
-      throw new IllegalStateException("Redo can't be done at the moment");
-    final Change c = redos.pop();
+    lock.lock();
     try {
+      if (!canRedo()) {
+        throw new IllegalStateException("Redo can't be done at the moment");
+      }
+      final Change c = redos.getFirst();
       c.apply(doc);
-      undos.push(c);
-    } catch (final IllegalStateException e) {
-      redos.push(c); // put the change back to the REDOs stack if applying
-      // have failed
-      throw e;
+      undos.addFirst(c);
+      redos.removeFirst();
+    } finally {
+      lock.unlock();
     }
   }
 }
