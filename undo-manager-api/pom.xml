@@ -9,15 +9,10 @@
     <version>CURRENT-SNAPSHOT</version>
   </parent>
 
-  <artifactId>undo-manager-lib</artifactId>
+  <artifactId>undo-manager-api</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
-    <dependency>
-      <groupId>scalors</groupId>
-      <artifactId>undo-manager-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
@@ -26,6 +21,11 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
