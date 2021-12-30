@@ -1,5 +1,7 @@
 package undo;
 
+import static java.lang.String.format;
+
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
@@ -27,10 +29,12 @@ public interface UndoManagerFactory {
    * @return Default implementation of {@link UndoManagerFactory}
    */
   public static UndoManagerFactory getInstanceSPI() {
-    final Iterator<UndoManagerFactory> providersIterator = ServiceLoader.load(UndoManagerFactory.class).iterator();
-    if (providersIterator.hasNext())
-      return providersIterator.next();
+    final Iterator<UndoManagerFactory> i = ServiceLoader.load(UndoManagerFactory.class)
+        .iterator();
+    if (i.hasNext()) {
+      return i.next();
+    }
     throw new IllegalStateException(
-        String.format("There is no any %1$s providers registered", UndoManagerFactory.class.getName()));
+        format("There is no any %1$s providers registered", UndoManagerFactory.class.getName()));
   }
 }

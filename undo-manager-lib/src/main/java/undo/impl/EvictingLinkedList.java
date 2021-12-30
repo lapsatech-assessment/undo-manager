@@ -5,6 +5,8 @@ import java.util.LinkedList;
 
 public class EvictingLinkedList<E> extends LinkedList<E> {
 
+  private static final long serialVersionUID = 1L;
+
   private final int capacity;
 
   public EvictingLinkedList(final int capacity) {
